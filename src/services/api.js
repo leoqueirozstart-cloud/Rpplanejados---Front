@@ -1,55 +1,69 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const BASE_URL = import.meta.env.VITE_API_URL || "https://ricardo-rpplanejados.vercel.app";
 
-function getHeaders() {
-  const headers = {}
-  const token = localStorage.getItem('token')
+async function request(endpoint, options = {}) {
+  const { method = "GET", body = null } = options;
+
+  const url = endpoint.startsWith("/")
+    ? `${BASE_URL}${endpoint}`
+    : `${BASE_URL}/${endpoint}`;
+
+  const headers = {};
+
+  const token = localStorage.getItem("token");
   if (token) {
-    headers.Authorization = `Bearer ${token}`
+    headers["Authorization"] = `Bearer ${token}`;
   }
-  return headers
-}
 
-async function request(method, url, data = null) {
-  const config = {
+  const fetchOptions = {
     method,
-    headers: getHeaders()
+    headers
+  };
+
+  if (body instanceof FormData) {
+    fetchOptions.body = body;
+  } else if (body) {
+    headers["Content-Type"] = "application/json";
+    fetchOptions.body = JSON.stringify(body);
   }
 
-  if (data instanceof FormData) {
-    delete config.headers['Content-Type']
-    config.body = data
-  } else if (data) {
-    config.headers['Content-Type'] = 'application/json'
-    config.body = JSON.stringify(data)
-  }
-
-  const response = await fetch(`${BASE_URL}${url}`, config)
+  const response = await fetch(url, fetchOptions);
 
   if (response.status === 401) {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    const isAdminRoute = url.includes('/admin/')
-    if (isAdminRoute && window.location.pathname.startsWith('/admin')) {
-      window.location.href = '/admin/login'
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    if (window.location.pathname.startsWith("/admin")) {
+      window.location.href = "/admin/login";
     }
-    throw new Error('Unauthorized')
+    throw new Error("Unauthorized");
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || `HTTP ${response.status}`)
+    let errorMessage = `HTTP ${response.status}`;
+    try {
+      const data = await response.json();
+      errorMessage = data.message || data.error || errorMessage;
+    } catch {
+      errorMessage = await response.text() || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
 
-  const text = await response.text()
-  return text ? JSON.parse(text) : null
+  const text = await response.text();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
 export const api = {
-  get: (url) => request('GET', url),
-  post: (url, data) => request('POST', url, data),
-  patch: (url, data) => request('PATCH', url, data),
-  put: (url, data) => request('PUT', url, data),
-  delete: (url) => request('DELETE', url)
-}
+  get: (endpoint) => request(endpoint, { method: "GET" }),
+  post: (endpoint, data) => request(endpoint, { method: "POST", body: data }),
+  put: (endpoint, data) => request(endpoint, { method: "PUT", body: data }),
+  patch: (endpoint, data) => request(endpoint, { method: "PATCH", body: data }),
+  delete: (endpoint) => request(endpoint, { method: "DELETE" })
+};
 
-export default api
+export default api;
