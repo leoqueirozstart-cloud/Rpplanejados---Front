@@ -12,22 +12,20 @@ const STATUS_OPTIONS = [
 
 export default function AdminClients() {
   const [clients, setClients] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     loadClients()
+    return () => {}
   }, [])
 
   const loadClients = async () => {
     try {
       setLoading(true)
       setError(null)
-      console.log('Buscando clientes...')
 
       const data = await clientService.getClients()
-
-      console.log('Dados recebidos:', data)
 
       let clientsArray = []
 
@@ -37,14 +35,10 @@ export default function AdminClients() {
         clientsArray = data.clients || data.data || []
       }
 
-      console.log('Clientes processados:', clientsArray)
-
       setClients(clientsArray || [])
-      setError(null)
     } catch (err) {
       console.error('Erro ao carregar clientes:', err)
-      const errorMessage = err.response?.data?.error || err.message || 'Erro ao carregar clientes. Tente fazer login novamente.'
-      setError(errorMessage)
+      setError(err.message || 'Erro ao carregar clientes')
     } finally {
       setLoading(false)
     }
@@ -62,17 +56,27 @@ export default function AdminClients() {
   }
 
   if (loading) return (
-    <div style={{ padding: 40, textAlign: 'center' }}>
+    <div style={{ padding: 40, textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
       <p>Carregando clientes...</p>
     </div>
   )
 
   if (error) return (
-    <div style={{ padding: 40, textAlign: 'center' }}>
-      <p style={{ color: 'red', marginBottom: 16 }}>Erro: {error}</p>
+    <div style={{ padding: 40, textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
+      <p style={{ color: 'red', marginBottom: 16 }}>{error}</p>
       <button onClick={loadClients} style={{ padding: '8px 16px', cursor: 'pointer' }}>
         Tentar novamente
       </button>
+    </div>
+  )
+
+  if (clients.length === 0) return (
+    <div style={{ padding: 40, fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ marginBottom: 30 }}>
+        <Link to="/admin/dashboard" style={{ color: '#666', textDecoration: 'none' }}>← Voltar</Link>
+      </div>
+      <h1>Clientes (0)</h1>
+      <p>Nenhum cliente encontrado.</p>
     </div>
   )
 
@@ -85,7 +89,7 @@ export default function AdminClients() {
       <h1>Clientes ({clients.length})</h1>
 
       {clients.length === 0 ? (
-        <p>Nenhum cliente ainda.</p>
+        <p>Nenhum cliente encontrado.</p>
       ) : (
         <div style={{ display: 'grid', gap: 15 }}>
           {clients.map(client => (
