@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { clientService } from '../services/clientService'
+
+const STATUS_OPTIONS = [
+  { value: 'novo', label: 'Novo' },
+  { value: 'em_contato', label: 'Em Contato' },
+  { value: 'orcamento_enviado', label: 'Orçamento Enviado' },
+  { value: 'fechado', label: 'Fechado' },
+  { value: 'perdido', label: 'Perdido' }
+]
 
 export default function AdminClients() {
   const [clients, setClients] = useState([])
@@ -7,33 +16,30 @@ export default function AdminClients() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    
-    fetch('http://localhost:3000/api/admin/clients', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => {
-      if (!res.ok) throw new Error('Erro: ' + res.status)
-      return res.json()
-    })
-    .then(data => {
-      setClients(data)
-      setLoading(false)
-    })
-    .catch(err => {
-      setError(err.message)
-      setLoading(false)
-    })
+    loadClients()
   }, [])
 
-  function handleDelete(id) {
+  const loadClients = () => {
+    clientService.getClients()
+      .then(data => {
+        setClients(data)
+        setLoading(false)
+      })
+      .catch(err => {
+        setError(err.message || 'Erro ao carregar')
+        setLoading(false)
+      })
+  }
+
+  async function handleStatusChange(id, newStatus) {
+    await clientService.updateClientStatus(id, newStatus)
+    setClients(clients.map(c => c.id === id ? { ...c, status: newStatus } : c))
+  }
+
+  async function handleDelete(id) {
     if (!confirm('Excluir?')) return
-    const token = localStorage.getItem('token')
-    fetch(`http://localhost:3000/api/admin/clients/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(() => setClients(clients.filter(c => c.id !== id)))
+    await clientService.deleteClient(id)
+    setClients(clients.filter(c => c.id !== id))
   }
 
   if (loading) return <div style={{ padding: 40 }}>Carregando...</div>
@@ -44,17 +50,17 @@ export default function AdminClients() {
       <div style={{ marginBottom: 30 }}>
         <Link to="/admin/dashboard" style={{ color: '#666', textDecoration: 'none' }}>← Voltar</Link>
       </div>
-      
+
       <h1>Clientes ({clients.length})</h1>
-      
+
       {clients.length === 0 ? (
         <p>Nenhum cliente ainda.</p>
       ) : (
         <div style={{ display: 'grid', gap: 15 }}>
           {clients.map(client => (
-            <div key={client.id} style={{ 
-              border: '1px solid #ddd', 
-              padding: 20, 
+            <div key={client.id} style={{
+              border: '1px solid #ddd',
+              padding: 20,
               borderRadius: 8,
               backgroundColor: 'white'
             }}>
@@ -65,15 +71,26 @@ export default function AdminClients() {
                   <p style={{ margin: 5, color: '#666' }}>📞 {client.phone}</p>
                   <p style={{ margin: 5, color: '#666' }}>💬 {client.message || 'sem mensagem'}</p>
                   <p style={{ margin: 10, fontSize: 12, color: '#888' }}>
-                    Status: <strong>{client.status}</strong> | Criado: {new Date(client.createdAt).toLocaleDateString()}
+                    Criado: {new Date(client.created_at || client.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <button 
-                  onClick={() => handleDelete(client.id)}
-                  style={{ background: '#ff4444', color: 'white', border: 'none', padding: '8px 12px', borderRadius: 4, cursor: 'pointer' }}
-                >
-                  Excluir
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                  <select
+                    value={client.status}
+                    onChange={(e) => handleStatusChange(client.id, e.target.value)}
+                    style={{ padding: '6px 12px', borderRadius: 4, border: '1px solid #ddd', fontSize: 14 }}
+                  >
+                    {STATUS_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => handleDelete(client.id)}
+                    style={{ background: '#ff4444', color: 'white', border: 'none', padding: '6px 12px', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
+                  >
+                    Excluir
+                  </button>
+                </div>
               </div>
             </div>
           ))}

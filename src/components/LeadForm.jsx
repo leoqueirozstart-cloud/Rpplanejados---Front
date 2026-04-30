@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { clientService } from '../services/clientService'
 
 const WHATSAPP_NUMBER = '5511999999999'
 
@@ -18,19 +19,12 @@ export default function LeadForm({ isOpen, onClose, projectTitle = '' }) {
 
     try {
       setSending(true)
-      
-      // Enviar dados para o backend
-      const response = await fetch('http://localhost:3000/api/clients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          message: projectTitle ? `Interesse em: ${projectTitle}` : form.message
-        })
+
+      await clientService.createClient({
+        ...form,
+        projectTitle
       })
 
-      if (!response.ok) throw new Error('Erro ao enviar')
-      
       setSent(true)
       
       // Redirecionar para o WhatsApp após 1 segundo

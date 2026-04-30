@@ -35,17 +35,13 @@ export const projectService = {
   async uploadFile(file) {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await api.post('/api/admin/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const res = await api.post('/api/admin/upload', formData)
     return res.data[0]
   },
   async uploadFiles(files) {
     const formData = new FormData()
     files.forEach(f => formData.append('files', f))
-    const res = await api.post('/api/admin/upload/multiple', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const res = await api.post('/api/admin/upload/multiple', formData)
     return res.data
   }
 }

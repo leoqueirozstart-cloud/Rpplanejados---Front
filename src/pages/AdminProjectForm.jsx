@@ -12,7 +12,6 @@ export default function AdminProjectForm() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [showInstagramHelp, setShowInstagramHelp] = useState(false)
   const [data, setData] = useState({
     title: '', description: '', category: 'moveis-planejados', coverImageUrl: '',
     imageUrls: [], published: false, imageUrl: ''
@@ -40,40 +39,6 @@ export default function AdminProjectForm() {
       setData({ ...data, imageUrls: [...data.imageUrls, ...urls] })
     } catch { }
     finally { setUploading(false) }
-  }
-
-  const processInstagramEmbed = async () => {
-    if (!data.instagramEmbed) return alert('Cole o código embed primeiro')
-    if (data.instagramEmbed.length < 50) return alert('O código embed parece estar incompleto. Cole o código completo do embed.')
-    
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:3000/api/admin/parse-embed', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ embedCode: data.instagramEmbed })
-      })
-      
-      const result = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao processar embed')
-      }
-      
-      if (result.images && result.images.length > 0) {
-        if (!data.coverImageUrl) {
-          setData({ ...data, coverImageUrl: result.images[0], imageUrls: result.images, instagramEmbed: '' })
-        } else {
-          setData({ ...data, imageUrls: [...data.imageUrls, ...result.images], instagramEmbed: '' })
-        }
-        alert('Imagem importada com sucesso!')
-      }
-    } catch (err) {
-      alert(err.message || 'Erro ao processar embed. Tente usar o método de salvar na galeria.')
-    }
   }
 
   const [error, setError] = useState('')
