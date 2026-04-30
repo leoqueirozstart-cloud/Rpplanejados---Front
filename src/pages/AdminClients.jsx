@@ -19,16 +19,29 @@ export default function AdminClients() {
     loadClients()
   }, [])
 
-  const loadClients = () => {
-    clientService.getClients()
-      .then(data => {
-        setClients(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        setError(err.message || 'Erro ao carregar')
-        setLoading(false)
-      })
+  const loadClients = async () => {
+    try {
+      setLoading(true)
+      console.log('Buscando clientes...')
+
+      const data = await clientService.getClients()
+
+      console.log('Dados recebidos:', data)
+
+      const clientsArray = Array.isArray(data)
+        ? data
+        : data?.clients || data?.data || []
+
+      console.log('Clientes processados:', clientsArray)
+
+      setClients(clientsArray)
+      setError('')
+    } catch (err) {
+      console.error('Erro ao carregar clientes:', err)
+      setError(err.response?.data?.error || err.message || 'Erro ao carregar')
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleStatusChange(id, newStatus) {

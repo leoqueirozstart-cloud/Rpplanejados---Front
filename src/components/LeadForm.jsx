@@ -20,11 +20,14 @@ export default function LeadForm({ isOpen, onClose, projectTitle = '' }) {
     try {
       setSending(true)
 
+      console.log('Enviando lead:', { ...form, projectTitle })
+
       await clientService.createClient({
         ...form,
         projectTitle
       })
 
+      console.log('Lead enviado com sucesso')
       setSent(true)
       
       // Redirecionar para o WhatsApp após 1 segundo
@@ -40,7 +43,9 @@ export default function LeadForm({ isOpen, onClose, projectTitle = '' }) {
       }, 1500)
 
     } catch (err) {
-      alert('Erro ao enviar. Tente novamente.')
+      console.error('Erro ao enviar lead:', err)
+      const errorMessage = err.response?.data?.error || err.message || 'Erro ao enviar. Tente novamente.'
+      alert(errorMessage)
     } finally {
       setSending(false)
     }
