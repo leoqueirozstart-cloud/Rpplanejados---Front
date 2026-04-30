@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { clientService } from '../services/clientService'
 
-const WHATSAPP_NUMBER = '5511999999999'
+const WHATSAPP_NUMBER = '5511998231085'
 
 export default function LeadForm({ isOpen, onClose, projectTitle = '' }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })

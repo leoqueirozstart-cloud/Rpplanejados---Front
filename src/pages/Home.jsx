@@ -22,14 +22,14 @@ const BENEFITS = [
 ]
 
 const AMBIENTES = [
-  { name: 'Cozinhas', icon: '🍳', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=600&fit=crop' },
-  { name: 'Dormitórios', icon: '🛏️', img: 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=600&h=600&fit=crop' },
-  { name: 'Closets', icon: '👔', img: 'https://images.unsplash.com/photo-1558997519-83ea9252edf8?w=600&h=600&fit=crop' },
-  { name: 'Salas', icon: '🛋️', img: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=600&h=600&fit=crop' },
-  { name: 'Banheiros', icon: '🚿', img: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&h=600&fit=crop' },
-  { name: 'Home Office', icon: '💼', img: 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&h=600&fit=crop' },
-  { name: 'Áreas Gourmet', icon: '🍔', img: 'https://images.unsplash.com/photo-1556909114-44e3e70034e2?w=600&h=600&fit=crop' },
-  { name: 'Comercial', icon: '🏢', img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=600&fit=crop' }
+  { name: 'Cozinhas', icon: '🍳', img: 'https://i.pinimg.com/1200x/cf/05/ba/cf05bac5d6fa97a186542722ff815b36.jpg' },
+  { name: 'Dormitórios', icon: '🛏️', img: 'https://i.pinimg.com/736x/15/6a/01/156a010710d99392e2bfb6c2f47c59ed.jpg' },
+  { name: 'Closets', icon: '👔', img: 'https://i.pinimg.com/736x/27/64/3a/27643a94f7e51938e8f4993fe7929a3e.jpg' },
+  { name: 'Salas', icon: '🛋️', img: 'https://i.pinimg.com/736x/e4/b9/4f/e4b94f982f020e992ada3cba3cd3dd63.jpg' },
+  { name: 'Banheiros', icon: '🚿', img: 'https://i.pinimg.com/1200x/c9/8f/65/c98f65e50e717026e053bee02b5aded6.jpg' },
+  { name: 'Home Office', icon: '💼', img: 'https://i.pinimg.com/1200x/c2/c6/16/c2c616e0a9524ecea3e534f7871cbf50.jpg' },
+  { name: 'Áreas Gourmet', icon: '🍔', img: 'https://i.pinimg.com/736x/1e/33/9f/1e339f0cc49a71b648c5989170c71407.jpg' },
+  { name: 'Comercial', icon: '🏢', img: 'https://i.pinimg.com/736x/62/81/31/62813119a608c79e27d62fb829ee08a8.jpg' }
 ]
 
 const STEPS = [
@@ -50,7 +50,7 @@ const FAQS = [
   { q: 'O prazo depende de quê?', a: 'O prazo varia conforme a complexidade do projeto e tamanho da obra. Após a aprovação, informamos o tempo de produção e instalação.' }
 ]
 
-const WHATSAPP_NUMBER = '5511999999999'
+const WHATSAPP_NUMBER = '5511998231085'
 
 export default function Home() {
   const [projects, setProjects] = useState([])
@@ -137,7 +137,7 @@ export default function Home() {
             <span className="logo-serif">RP</span>
             <span className="logo-text">PLANEJADOS</span>
           </div>
-          <a href="https://wa.me/5511999999999" className="cta-button">ORÇAMENTO</a>
+          <a href={`https://wa.me/${WHATSAPP_NUMBER}`} className="cta-button">ORÇAMENTO</a>
         </div>
       </header>
 
@@ -306,8 +306,9 @@ export default function Home() {
             </div>
           </div>
           <div className="about-right">
-            <div className="about-frame">
-              <span className="rp-large">RP</span>
+            <div className="about-photos">
+              <img src="https://i.ibb.co/PGz6fmss/download-8.png" alt="Foto 1" className="about-photo photo-1" />
+              <img src="https://i.ibb.co/WWDYrJV5/download-6.png" alt="Foto 2" className="about-photo photo-2" />
             </div>
           </div>
         </div>
@@ -353,7 +354,11 @@ export default function Home() {
           <div className="footer-column">
             <h4>SIGA-NOS</h4>
             <div className="footer-social">
-              <a href="#" aria-label="Instagram">📷</a>
+              <a href="https://www.instagram.com/_rplanejados/" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="footer-social-icon-link">
+                <svg className="footer-social-icon" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                </svg>
+              </a>
               <a href="#" aria-label="Facebook">📘</a>
               <a href="#" aria-label="Pinterest">📌</a>
             </div>
@@ -365,12 +370,12 @@ export default function Home() {
         </div>
       </footer>
 
-      <button onClick={() => setShowLeadForm(true)} className="whatsapp-float whatsapp-blink">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M17.472 14.382C17.208 14.246 16.685 13.92 16.233 13.737C15.78 13.555 15.384 13.443 15.042 13.443C14.352 13.443 13.812 13.627 13.412 13.992C13.012 14.357 12.732 14.886 12.572 15.577L11.817 18.032C11.621 18.768 11.217 19.34 10.605 19.749C9.993 20.157 9.333 20.361 8.625 20.361C7.917 20.361 7.248 20.14 6.618 19.698C5.988 19.256 5.481 18.664 5.098 17.921C4.714 17.179 4.522 16.339 4.522 15.401C4.522 14.463 4.732 13.605 5.152 12.827C5.572 12.05 6.108 11.404 6.76 10.889C7.412 10.375 8.13 10.006 8.915 9.773C9.7 9.541 10.469 9.425 11.222 9.425C11.975 9.425 12.705 9.55 13.41 9.801C14.115 10.052 14.703 10.465 15.175 11.041L16.565 10.037C17.213 9.253 17.617 8.317 17.776 7.229C17.863 6.509 17.824 5.865 17.658 5.297C17.492 4.729 17.224 4.245 16.854 3.845C16.433 3.395 15.944 3.17 15.387 3.17C14.83 3.17 14.341 3.395 13.92 3.845L12.798 4.967C12.577 5.188 12.439 5.465 12.385 5.797C12.331 6.13 12.376 6.443 12.52 6.738C12.801 7.438 13.239 8.252 13.834 9.179C14.43 10.107 15.074 10.989 15.766 11.825C16.458 12.661 17.172 13.432 17.907 14.138C18.641 14.845 19.267 15.417 19.784 15.855C20.301 16.293 20.652 16.673 20.838 16.995C21.023 17.317 21.095 17.631 20.432 18.263L19.2 19.495C18.884 19.811 18.484 20.045 18 20.195C17.516 20.345 17.012 20.42 16.488 20.42C15.964 20.42 15.46 20.345 14.976 20.195C14.492 20.045 14.092 19.811 13.776 19.495C13.567 19.286 13.401 19.034 13.277 18.74C13.154 18.446 13.092 18.16 13.092 17.882C13.092 17.604 13.154 17.318 13.277 17.024C13.401 16.73 13.567 16.478 13.776 16.269C13.985 16.06 14.228 15.894 14.505 15.772C14.782 15.65 15.068 15.588 15.363 15.588C15.658 15.588 15.944 15.65 16.221 15.772C16.498 15.894 16.741 16.06 16.95 16.269L17.472 14.382Z" fill="white" />
-          <path d="M8.557 7.337C8.185 6.965 7.679 6.779 7.038 6.779C6.397 6.779 5.891 6.965 5.519 7.337C5.147 7.709 4.961 8.215 4.961 8.856C4.961 9.497 5.147 10.003 5.519 10.375L6.437 11.293C7.213 11.877 7.989 12.159 8.765 12.159C9.541 12.159 10.317 11.877 11.093 11.313L11.299 11.107C11.643 10.763 11.815 10.337 11.815 9.828C11.815 9.319 11.643 8.893 11.299 8.549C10.955 8.205 10.529 8.033 10.02 8.033C9.511 8.033 9.085 8.205 8.741 8.549L8.557 7.337Z" fill="white" />
-        </svg>
-      </button>
+      <div className="whatsapp-container">
+        <span className="whatsapp-bubble">Solicite seu orçamento</span>
+        <button onClick={() => setShowLeadForm(true)} className="whatsapp-btn">
+          📞
+        </button>
+      </div>
 
       <LeadForm isOpen={showLeadForm} onClose={() => setShowLeadForm(false)} />
     </div>
