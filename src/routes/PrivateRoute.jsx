@@ -15,7 +15,7 @@ export default function PrivateRoute({ children }) {
         fontFamily: 'Arial, sans-serif'
       }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 16, color: '#333' }}>Carregando...</p>
+          <p style={{ fontSize: 16, color: '#333' }}>Verificando autenticação...</p>
         </div>
       </div>
     )

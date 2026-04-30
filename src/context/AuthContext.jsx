@@ -8,9 +8,16 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = authService.getUser()
-    if (storedUser && authService.isAuthenticated()) {
-      setUser(storedUser)
+    const storedUser = localStorage.getItem('user')
+    const token = localStorage.getItem('token')
+    
+    if (storedUser && token) {
+      try {
+        setUser(JSON.parse(storedUser))
+      } catch (e) {
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+      }
     }
     setLoading(false)
   }, [])
