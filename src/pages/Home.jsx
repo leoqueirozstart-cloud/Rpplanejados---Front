@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { projectService } from '../services/projectService'
 import ProjectsCarousel from '../components/ProjectsCarousel'
 import LeadForm from '../components/LeadForm'
+import Testimonials from '../components/Testimonials'
 
 const CATEGORIES = [
   { value: 'all', label: 'TODOS' },
@@ -39,6 +40,8 @@ const STEPS = [
   { num: '5', title: 'Instalamos', desc: 'Entregamos e montamos no seu ambiente com precisão.' }
 ]
 
+const TESTIMONIALS = []
+
 const FAQS = [
   { q: 'Vocês fazem projeto sob medida?', a: 'Sim! Todos os nossos móveis são desenvolvidos sob medida, planejados especificamente para o seu espaço e necessidades.' },
   { q: 'O orçamento é gratuito?', a: 'Sim, oferecemos orçamento sem compromisso. Após uma conversa sobre suas necessidades, fazemos a visita técnica para medir e apresentar a proposta.' },
@@ -54,10 +57,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [category, setCategory] = useState('all')
   const [showLeadForm, setShowLeadForm] = useState(false)
+  const [testimonials, setTestimonials] = useState([])
 
-  useEffect(() => { 
+  useEffect(() => {
     loadProjects()
-    
+    loadTestimonials()
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -97,6 +102,17 @@ export default function Home() {
     finally { setLoading(false) }
   }
 
+  const loadTestimonials = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'https://ricardo-rpplanejados.vercel.app'
+      const res = await fetch(`${API_URL}/api/testimonials`)
+      if (res.ok) {
+        const data = await res.json()
+        setTestimonials(data)
+      }
+    } catch (e) { console.error(e) }
+  }
+
   const filtered = category === 'all' ? projects : projects.filter(p => p.category === category)
 
   return (
@@ -114,6 +130,7 @@ export default function Home() {
           <nav className="nav">
             <a href="#inicio">INÍCIO</a>
             <a href="#portfolio">PORTFÓLIO</a>
+            <a href="#depoimentos">DEPOIMENTOS</a>
             <a href="#sobre">SOBRE</a>
           </nav>
           <div className="logo">
@@ -150,9 +167,9 @@ export default function Home() {
           </div>
           <div className="hero-right">
             <div className="hero-image-frame">
-              <img 
-                src="https://i.ibb.co/rKKgLqpr/Chat-GPT-Image-30-04-2026-02-09-27.png" 
-                alt="RP Planejados" 
+              <img
+                src="https://i.ibb.co/rKKgLqpr/Chat-GPT-Image-30-04-2026-02-09-27.png"
+                alt="RP Planejados"
                 className="hero-logo-img"
               />
             </div>
@@ -164,7 +181,7 @@ export default function Home() {
         <div className="marquee-track">
           {[...Array(8)].map((_, i) => (
             <span key={i} className="marquee-text">
-              {i % 2 === 0 ? 'MARCENARIA PREMIUM' : 'DESIGN EXCLUSIVO'} ✦ 
+              {i % 2 === 0 ? 'MARCENARIA PREMIUM' : 'DESIGN EXCLUSIVO'} ✦
             </span>
           ))}
         </div>
@@ -244,6 +261,8 @@ export default function Home() {
         </div>
       </section>
 
+      <Testimonials testimonials={testimonials} />
+
       <section id="faq" className="faq animate-on-scroll">
         <div className="section-header">
           <span className="section-label">DÚVIDAS FREQUENTES</span>
@@ -274,10 +293,10 @@ export default function Home() {
         <div className="about-grid">
           <div className="about-left">
             <span className="section-label">SOBRE</span>
-            <h2 className="about-title">TRADIÇÃO<br/>EM MARCENARIA</h2>
+            <h2 className="about-title">TRADIÇÃO<br />EM MARCENARIA</h2>
             <p className="about-text">
-              Com mais de 10 anos de experiência, criamos móveis que combinam 
-              funcionalidade, durabilidade e design elegante. Cada peça é desenvolvida 
+              Com mais de 10 anos de experiência, criamos móveis que combinam
+              funcionalidade, durabilidade e design elegante. Cada peça é desenvolvida
               sob medida para atender às necessidades específicas de cada cliente.
             </p>
             <div className="stats">
@@ -321,6 +340,7 @@ export default function Home() {
             <h4>NAVEGAÇÃO</h4>
             <a href="#inicio">Início</a>
             <a href="#portfolio">Portfólio</a>
+            <a href="#depoimentos">Depoimentos</a>
             <a href="#beneficios">Benefícios</a>
             <a href="#ambientes">Ambientes</a>
           </div>
@@ -347,8 +367,8 @@ export default function Home() {
 
       <button onClick={() => setShowLeadForm(true)} className="whatsapp-float whatsapp-blink">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M17.472 14.382C17.208 14.246 16.685 13.92 16.233 13.737C15.78 13.555 15.384 13.443 15.042 13.443C14.352 13.443 13.812 13.627 13.412 13.992C13.012 14.357 12.732 14.886 12.572 15.577L11.817 18.032C11.621 18.768 11.217 19.34 10.605 19.749C9.993 20.157 9.333 20.361 8.625 20.361C7.917 20.361 7.248 20.14 6.618 19.698C5.988 19.256 5.481 18.664 5.098 17.921C4.714 17.179 4.522 16.339 4.522 15.401C4.522 14.463 4.732 13.605 5.152 12.827C5.572 12.05 6.108 11.404 6.76 10.889C7.412 10.375 8.13 10.006 8.915 9.773C9.7 9.541 10.469 9.425 11.222 9.425C11.975 9.425 12.705 9.55 13.41 9.801C14.115 10.052 14.703 10.465 15.175 11.041L16.565 10.037C17.213 9.253 17.617 8.317 17.776 7.229C17.863 6.509 17.824 5.865 17.658 5.297C17.492 4.729 17.224 4.245 16.854 3.845C16.433 3.395 15.944 3.17 15.387 3.17C14.83 3.17 14.341 3.395 13.92 3.845L12.798 4.967C12.577 5.188 12.439 5.465 12.385 5.797C12.331 6.13 12.376 6.443 12.52 6.738C12.801 7.438 13.239 8.252 13.834 9.179C14.43 10.107 15.074 10.989 15.766 11.825C16.458 12.661 17.172 13.432 17.907 14.138C18.641 14.845 19.267 15.417 19.784 15.855C20.301 16.293 20.652 16.673 20.838 16.995C21.023 17.317 21.095 17.631 20.432 18.263L19.2 19.495C18.884 19.811 18.484 20.045 18 20.195C17.516 20.345 17.012 20.42 16.488 20.42C15.964 20.42 15.46 20.345 14.976 20.195C14.492 20.045 14.092 19.811 13.776 19.495C13.567 19.286 13.401 19.034 13.277 18.74C13.154 18.446 13.092 18.16 13.092 17.882C13.092 17.604 13.154 17.318 13.277 17.024C13.401 16.73 13.567 16.478 13.776 16.269C13.985 16.06 14.228 15.894 14.505 15.772C14.782 15.65 15.068 15.588 15.363 15.588C15.658 15.588 15.944 15.65 16.221 15.772C16.498 15.894 16.741 16.06 16.95 16.269L17.472 14.382Z" fill="white"/>
-          <path d="M8.557 7.337C8.185 6.965 7.679 6.779 7.038 6.779C6.397 6.779 5.891 6.965 5.519 7.337C5.147 7.709 4.961 8.215 4.961 8.856C4.961 9.497 5.147 10.003 5.519 10.375L6.437 11.293C7.213 11.877 7.989 12.159 8.765 12.159C9.541 12.159 10.317 11.877 11.093 11.313L11.299 11.107C11.643 10.763 11.815 10.337 11.815 9.828C11.815 9.319 11.643 8.893 11.299 8.549C10.955 8.205 10.529 8.033 10.02 8.033C9.511 8.033 9.085 8.205 8.741 8.549L8.557 7.337Z" fill="white"/>
+          <path d="M17.472 14.382C17.208 14.246 16.685 13.92 16.233 13.737C15.78 13.555 15.384 13.443 15.042 13.443C14.352 13.443 13.812 13.627 13.412 13.992C13.012 14.357 12.732 14.886 12.572 15.577L11.817 18.032C11.621 18.768 11.217 19.34 10.605 19.749C9.993 20.157 9.333 20.361 8.625 20.361C7.917 20.361 7.248 20.14 6.618 19.698C5.988 19.256 5.481 18.664 5.098 17.921C4.714 17.179 4.522 16.339 4.522 15.401C4.522 14.463 4.732 13.605 5.152 12.827C5.572 12.05 6.108 11.404 6.76 10.889C7.412 10.375 8.13 10.006 8.915 9.773C9.7 9.541 10.469 9.425 11.222 9.425C11.975 9.425 12.705 9.55 13.41 9.801C14.115 10.052 14.703 10.465 15.175 11.041L16.565 10.037C17.213 9.253 17.617 8.317 17.776 7.229C17.863 6.509 17.824 5.865 17.658 5.297C17.492 4.729 17.224 4.245 16.854 3.845C16.433 3.395 15.944 3.17 15.387 3.17C14.83 3.17 14.341 3.395 13.92 3.845L12.798 4.967C12.577 5.188 12.439 5.465 12.385 5.797C12.331 6.13 12.376 6.443 12.52 6.738C12.801 7.438 13.239 8.252 13.834 9.179C14.43 10.107 15.074 10.989 15.766 11.825C16.458 12.661 17.172 13.432 17.907 14.138C18.641 14.845 19.267 15.417 19.784 15.855C20.301 16.293 20.652 16.673 20.838 16.995C21.023 17.317 21.095 17.631 20.432 18.263L19.2 19.495C18.884 19.811 18.484 20.045 18 20.195C17.516 20.345 17.012 20.42 16.488 20.42C15.964 20.42 15.46 20.345 14.976 20.195C14.492 20.045 14.092 19.811 13.776 19.495C13.567 19.286 13.401 19.034 13.277 18.74C13.154 18.446 13.092 18.16 13.092 17.882C13.092 17.604 13.154 17.318 13.277 17.024C13.401 16.73 13.567 16.478 13.776 16.269C13.985 16.06 14.228 15.894 14.505 15.772C14.782 15.65 15.068 15.588 15.363 15.588C15.658 15.588 15.944 15.65 16.221 15.772C16.498 15.894 16.741 16.06 16.95 16.269L17.472 14.382Z" fill="white" />
+          <path d="M8.557 7.337C8.185 6.965 7.679 6.779 7.038 6.779C6.397 6.779 5.891 6.965 5.519 7.337C5.147 7.709 4.961 8.215 4.961 8.856C4.961 9.497 5.147 10.003 5.519 10.375L6.437 11.293C7.213 11.877 7.989 12.159 8.765 12.159C9.541 12.159 10.317 11.877 11.093 11.313L11.299 11.107C11.643 10.763 11.815 10.337 11.815 9.828C11.815 9.319 11.643 8.893 11.299 8.549C10.955 8.205 10.529 8.033 10.02 8.033C9.511 8.033 9.085 8.205 8.741 8.549L8.557 7.337Z" fill="white" />
         </svg>
       </button>
 

@@ -55,6 +55,7 @@ export default function AdminDashboard() {
           <nav style={{ display: 'flex', gap: 24 }}>
             <Link to="/admin/dashboard" style={{ textDecoration: 'none', color: '#333', fontWeight: 500 }}>Projetos</Link>
             <Link to="/admin/clientes" style={{ textDecoration: 'none', color: '#888' }}>Clientes</Link>
+            <Link to="/admin/testimonials" style={{ textDecoration: 'none', color: '#888' }}>Depoimentos</Link>
           </nav>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>

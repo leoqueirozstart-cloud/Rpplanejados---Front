@@ -5,6 +5,7 @@ import AdminLogin from './pages/AdminLogin.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import AdminProjectForm from './pages/AdminProjectForm.jsx'
 import AdminClients from './pages/AdminClients.jsx'
+import AdminTestimonials from './pages/AdminTestimonials.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import PrivateRoute from './routes/PrivateRoute.jsx'
 
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
           <Route path="/admin/clientes" element={<PrivateRoute><AdminClients /></PrivateRoute>} />
           <Route path="/admin/clients" element={<PrivateRoute><AdminClients /></PrivateRoute>} />
+          <Route path="/admin/testimonials" element={<PrivateRoute><AdminTestimonials /></PrivateRoute>} />
           <Route path="/admin/projetos/novo" element={<PrivateRoute><AdminProjectForm /></PrivateRoute>} />
           <Route path="/admin/projetos/editar/:id" element={<PrivateRoute><AdminProjectForm /></PrivateRoute>} />
         </Routes>
