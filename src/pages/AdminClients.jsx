@@ -13,7 +13,7 @@ const STATUS_OPTIONS = [
 export default function AdminClients() {
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     loadClients()
@@ -22,23 +22,29 @@ export default function AdminClients() {
   const loadClients = async () => {
     try {
       setLoading(true)
+      setError(null)
       console.log('Buscando clientes...')
 
       const data = await clientService.getClients()
 
       console.log('Dados recebidos:', data)
 
-      const clientsArray = Array.isArray(data)
-        ? data
-        : data?.clients || data?.data || []
+      let clientsArray = []
+
+      if (Array.isArray(data)) {
+        clientsArray = data
+      } else if (data && typeof data === 'object') {
+        clientsArray = data.clients || data.data || []
+      }
 
       console.log('Clientes processados:', clientsArray)
 
-      setClients(clientsArray)
-      setError('')
+      setClients(clientsArray || [])
+      setError(null)
     } catch (err) {
       console.error('Erro ao carregar clientes:', err)
-      setError(err.response?.data?.error || err.message || 'Erro ao carregar')
+      const errorMessage = err.response?.data?.error || err.message || 'Erro ao carregar clientes. Tente fazer login novamente.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -55,8 +61,20 @@ export default function AdminClients() {
     setClients(clients.filter(c => c.id !== id))
   }
 
-  if (loading) return <div style={{ padding: 40 }}>Carregando...</div>
-  if (error) return <div style={{ padding: 40 }}>Erro: {error}</div>
+  if (loading) return (
+    <div style={{ padding: 40, textAlign: 'center' }}>
+      <p>Carregando clientes...</p>
+    </div>
+  )
+
+  if (error) return (
+    <div style={{ padding: 40, textAlign: 'center' }}>
+      <p style={{ color: 'red', marginBottom: 16 }}>Erro: {error}</p>
+      <button onClick={loadClients} style={{ padding: '8px 16px', cursor: 'pointer' }}>
+        Tentar novamente
+      </button>
+    </div>
+  )
 
   return (
     <div style={{ padding: 40, fontFamily: 'Arial, sans-serif' }}>

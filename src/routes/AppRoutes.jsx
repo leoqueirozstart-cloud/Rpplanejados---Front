@@ -30,6 +30,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/admin/clients"
+        element={
+          <PrivateRoute>
+            <AdminClients />
+          </PrivateRoute>
+        }
+      />
+      <Route
         path="/admin/projetos/novo"
         element={
           <PrivateRoute>
