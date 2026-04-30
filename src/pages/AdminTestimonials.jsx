@@ -1,18 +1,45 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { clientService } from '../services/clientService'
+import { Link } from 'react-router-dom'
+import { testimonialService } from '../services/testimonialService'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://ricardo-rpplanejados.vercel.app'
+const styles = {
+  page: { minHeight: '100vh', backgroundColor: '#F9FAFB' },
+  header: { backgroundColor: 'white', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
+  logoContainer: { display: 'flex', alignItems: 'center', gap: 16 },
+  logo: { display: 'flex', alignItems: 'center', gap: 8 },
+  logoBox: { width: 32, height: 32, backgroundColor: '#FF6A4D', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  logoText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  divider: { color: '#888' },
+  nav: { display: 'flex', gap: 24 },
+  navLink: { textDecoration: 'none', fontSize: 14, fontWeight: 500 },
+  userSection: { display: 'flex', alignItems: 'center', gap: 16 },
+  userName: { fontSize: 14, color: '#666' },
+  logoutBtn: { fontSize: 14, color: '#FF6A4D', background: 'none', border: 'none', cursor: 'pointer' },
+  main: { maxWidth: 900, margin: '0 auto', padding: 32 },
+  pageTitle: { margin: '0 0 8px', fontSize: 24, fontFamily: 'Playfair Display, serif' },
+  pageDesc: { color: '#666', fontSize: 14, marginBottom: 24 },
+  formCard: { backgroundColor: 'white', borderRadius: 12, padding: 24, marginBottom: 24 },
+  formTitle: { margin: '0 0 16px', fontSize: 16, fontWeight: 600 },
+  formRow: { display: 'flex', gap: 12, flexWrap: 'wrap' },
+  input: { flex: 1, minWidth: 200, padding: '12px 16px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14 },
+  submitBtn: { padding: '12px 24px', backgroundColor: '#FF6A4D', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 },
+  card: { backgroundColor: 'white', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' },
+  cardImage: { width: '100%', height: 200, objectFit: 'cover', backgroundColor: '#f3f4f6' },
+  cardContent: { padding: 16 },
+  cardName: { fontSize: 14, fontWeight: 500, color: '#333', marginBottom: 12 },
+  deleteBtn: { width: '100%', padding: 8, backgroundColor: '#FEE2E2', color: '#DC2626', border: 'none', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
+  loading: { textAlign: 'center', padding: 60, color: '#666' },
+  empty: { textAlign: 'center', padding: 60, backgroundColor: 'white', borderRadius: 16 }
+}
 
-function TestimonialsManager() {
+export default function AdminTestimonials() {
   const [testimonials, setTestimonials] = useState([])
   const [loading, setLoading] = useState(true)
   const [newUrl, setNewUrl] = useState('')
   const [newName, setNewName] = useState('')
   const [saving, setSaving] = useState(false)
-  const navigate = useNavigate()
-
-  const token = localStorage.getItem('token')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     loadTestimonials()
@@ -20,15 +47,13 @@ function TestimonialsManager() {
 
   const loadTestimonials = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/testimonials`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setTestimonials(data)
-      }
-    } catch (e) {
-      console.error(e)
+      setLoading(true)
+      setError('')
+      const data = await testimonialService.getTestimonials()
+      setTestimonials(data)
+    } catch (err) {
+      console.error('Erro:', err)
+      setError('Erro ao carregar depoimentos')
     } finally {
       setLoading(false)
     }
@@ -40,332 +65,98 @@ function TestimonialsManager() {
 
     setSaving(true)
     try {
-      console.log('Enviando para:', `${API_URL}/api/admin/testimonials`)
-      const res = await fetch(`${API_URL}/api/admin/testimonials`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ imageUrl: newUrl, name: newName })
-      })
-      console.log('Response:', res.status)
-      if (res.ok) {
-        setNewUrl('')
-        setNewName('')
-        loadTestimonials()
-      } else {
-        const err = await res.json()
-        alert('Erro: ' + (err.error || 'Erro ao adicionar'))
-      }
-    } catch (e) {
-      console.error(e)
-      alert('Erro de conexão')
+      await testimonialService.addTestimonial({ imageUrl: newUrl, name: newName })
+      setNewUrl('')
+      setNewName('')
+      loadTestimonials()
+    } catch (err) {
+      alert('Erro ao adicionar: ' + (err.response?.data?.error || err.message))
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Excluir este depoimento?')) return
+    if (!confirm('Excluir depoimento?')) return
     try {
-      const res = await fetch(`${API_URL}/api/admin/testimonials/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.ok) {
-        loadTestimonials()
-      }
-    } catch (e) {
-      console.error(e)
+      await testimonialService.deleteTestimonial(id)
+      loadTestimonials()
+    } catch (err) {
+      alert('Erro ao excluir')
     }
   }
 
   return (
-    <div className="admin-page">
-      <header className="admin-header">
-        <div className="admin-header-content">
-          <div className="admin-logo">
-            <span className="logo-serif">RP</span>
-            <span className="logo-text">PLANEJADOS</span>
-          </div>
-          <nav className="admin-nav">
-            <Link to="/admin/dashboard">Projetos</Link>
-            <Link to="/admin/clientes">Clientes</Link>
-            <Link to="/admin/testimonials" className="active">Depoimentos</Link>
-            <button onClick={() => {
-              localStorage.removeItem('token')
-              navigate('/admin/login')
-            }} className="logout-btn">Sair</button>
+    <div style={styles.page}>
+      <header style={styles.header}>
+        <div style={styles.logoContainer}>
+          <Link to="/" style={styles.logo}>
+            <div style={styles.logoBox}>
+              <span style={styles.logoText}>RP</span>
+            </div>
+          </Link>
+          <span style={styles.divider}>|</span>
+          <nav style={styles.nav}>
+            <Link to="/admin/dashboard" style={{ ...styles.navLink, color: '#888' }}>Projetos</Link>
+            <Link to="/admin/clientes" style={{ ...styles.navLink, color: '#888' }}>Clientes</Link>
+            <Link to="/admin/testimonials" style={{ ...styles.navLink, color: '#333', fontWeight: 600 }}>Depoimentos</Link>
           </nav>
         </div>
       </header>
 
-      <main className="admin-main">
-        <div className="admin-content">
-          <div className="page-header">
-            <h1>Depoimentos</h1>
-            <p>Gerencie as imagens de depoimentos que aparecem no carrossel da homepage</p>
-          </div>
+      <main style={styles.main}>
+        <h1 style={styles.pageTitle}>Depoimentos</h1>
+        <p style={styles.pageDesc}>Adicione imagens de depoimentos do WhatsApp para o carrossel da homepage</p>
 
-          <form onSubmit={handleAdd} className="add-form">
-            <input
-              type="text"
-              placeholder="Nome do cliente (opcional)"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              className="form-input"
-            />
-            <input
-              type="url"
-              placeholder="URL da imagem do depoimento"
-              value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
-              required
-              className="form-input"
-            />
-            <button type="submit" disabled={saving} className="submit-btn">
-              {saving ? 'Adicionando...' : 'Adicionar Depoimento'}
-            </button>
+        <div style={styles.formCard}>
+          <h3 style={styles.formTitle}>Adicionar novo depoimento</h3>
+          <form onSubmit={handleAdd}>
+            <div style={styles.formRow}>
+              <input
+                type="text"
+                placeholder="Nome do cliente (opcional)"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                style={styles.input}
+              />
+              <input
+                type="url"
+                placeholder="URL da imagem do depoimento"
+                value={newUrl}
+                onChange={(e) => setNewUrl(e.target.value)}
+                required
+                style={styles.input}
+              />
+              <button type="submit" disabled={saving} style={styles.submitBtn}>
+                {saving ? 'Adicionando...' : 'Adicionar'}
+              </button>
+            </div>
           </form>
-
-          {loading ? (
-            <div className="loading">Carregando...</div>
-          ) : testimonials.length === 0 ? (
-            <div className="empty-state">
-              <p>Nenhum depoimento cadastrado</p>
-              <p className="hint">Adicione a URL de uma imagem para criar o primeiro depoimento</p>
-            </div>
-          ) : (
-            <div className="testimonials-grid">
-              {testimonials.map(t => (
-                <div key={t.id} className="testimonial-card">
-                  <img src={t.image_url || t.imageUrl} alt={t.name || 'Depoimento'} className="testimonial-img" />
-                  <div className="testimonial-info">
-                    <span className="testimonial-name">{t.name || 'Sem nome'}</span>
-                  </div>
-                  <button onClick={() => handleDelete(t.id)} className="delete-btn">
-                    Excluir
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
+
+        {error && <div style={{ padding: 12, backgroundColor: '#FEE2E2', color: '#DC2626', borderRadius: 8, marginBottom: 16 }}>{error}</div>}
+
+        {loading ? (
+          <div style={styles.loading}>Carregando...</div>
+        ) : testimonials.length === 0 ? (
+          <div style={styles.empty}>
+            <p style={{ color: '#888', marginBottom: 8 }}>Nenhum depoimento cadastrado</p>
+            <p style={{ color: '#999', fontSize: 13 }}>Adicione a URL de uma imagem para criar o primeiro depoimento</p>
+          </div>
+        ) : (
+          <div style={styles.grid}>
+            {testimonials.map(t => (
+              <div key={t.id} style={styles.card}>
+                <img src={t.image_url || t.imageUrl} alt={t.name || 'Depoimento'} style={styles.cardImage} />
+                <div style={styles.cardContent}>
+                  <div style={styles.cardName}>{t.name || 'Sem nome'}</div>
+                  <button onClick={() => handleDelete(t.id)} style={styles.deleteBtn}>Excluir</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
-
-      <style>{`
-        .admin-page {
-          min-height: 100vh;
-          background: #f5f5f5;
-        }
-
-        .admin-header {
-          background: white;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .admin-header-content {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 16px 24px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .admin-logo {
-          display: flex;
-          align-items: baseline;
-          gap: 4px;
-        }
-
-        .logo-serif {
-          font-family: 'Playfair Display', serif;
-          font-size: 24px;
-          font-weight: 700;
-          color: #FF6A4D;
-        }
-
-        .logo-text {
-          font-size: 14px;
-          font-weight: 600;
-          letter-spacing: 2px;
-          color: #3B3B3B;
-        }
-
-        .admin-nav {
-          display: flex;
-          gap: 24px;
-          align-items: center;
-        }
-
-        .admin-nav a {
-          color: #666;
-          font-size: 14px;
-          font-weight: 500;
-          text-decoration: none;
-          padding: 8px 0;
-          border-bottom: 2px solid transparent;
-          transition: all 0.2s;
-        }
-
-        .admin-nav a:hover, .admin-nav a.active {
-          color: #FF6A4D;
-          border-bottom-color: #FF6A4D;
-        }
-
-        .logout-btn {
-          background: none;
-          border: none;
-          color: #666;
-          font-size: 14px;
-          cursor: pointer;
-          padding: 8px 0;
-        }
-
-        .logout-btn:hover {
-          color: #FF6A4D;
-        }
-
-        .admin-main {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 32px 24px;
-        }
-
-        .admin-content {
-          background: white;
-          border-radius: 12px;
-          padding: 32px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .page-header {
-          margin-bottom: 32px;
-        }
-
-        .page-header h1 {
-          font-size: 28px;
-          color: #1a1a1a;
-          margin-bottom: 8px;
-        }
-
-        .page-header p {
-          color: #666;
-          font-size: 14px;
-        }
-
-        .add-form {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 32px;
-          flex-wrap: wrap;
-        }
-
-        .form-input {
-          flex: 1;
-          min-width: 200px;
-          padding: 12px 16px;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          font-size: 14px;
-        }
-
-        .form-input:focus {
-          outline: none;
-          border-color: #FF6A4D;
-        }
-
-        .submit-btn {
-          padding: 12px 24px;
-          background: #FF6A4D;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-          background: #e55a3d;
-        }
-
-        .submit-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .loading {
-          text-align: center;
-          padding: 48px;
-          color: #666;
-        }
-
-        .empty-state {
-          text-align: center;
-          padding: 48px;
-          color: #666;
-        }
-
-        .empty-state .hint {
-          font-size: 13px;
-          color: #999;
-          margin-top: 8px;
-        }
-
-        .testimonials-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 20px;
-        }
-
-        .testimonial-card {
-          background: #f9f9f9;
-          border-radius: 12px;
-          overflow: hidden;
-          padding: 12px;
-        }
-
-        .testimonial-img {
-          width: 100%;
-          height: 180px;
-          object-fit: cover;
-          border-radius: 8px;
-          margin-bottom: 12px;
-        }
-
-        .testimonial-info {
-          padding: 0 4px;
-        }
-
-        .testimonial-name {
-          font-size: 14px;
-          color: #333;
-          font-weight: 500;
-        }
-
-        .delete-btn {
-          margin-top: 12px;
-          width: 100%;
-          padding: 8px;
-          background: #fee2e2;
-          color: #dc2626;
-          border: none;
-          border-radius: 6px;
-          font-size: 13px;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-
-        .delete-btn:hover {
-          background: #fecaca;
-        }
-      `}</style>
     </div>
   )
 }
-
-export default TestimonialsManager
