@@ -3,10 +3,10 @@ import api from './api'
 export const authService = {
   async login(email, password) {
     const res = await api.post('/api/auth/login', { email, password })
-    const { token, name, email: userEmail, role } = res.data
+    const { token, name, email: userEmail, role } = res
     localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify({ name, email: userEmail, role }))
-    return res.data
+    return res
   },
   logout() {
     localStorage.removeItem('token')

@@ -2,46 +2,38 @@ import api from './api'
 
 export const projectService = {
   async getPublishedProjects() {
-    const res = await api.get('/api/projects/public')
-    return res.data
+    return await api.get('/api/projects/public')
   },
   async getPublishedProject(id) {
-    const res = await api.get(`/api/projects/public/${id}`)
-    return res.data
+    return await api.get(`/api/projects/public/${id}`)
   },
   async getAllProjects() {
-    const res = await api.get('/api/admin/projects')
-    return res.data
+    return await api.get('/api/admin/projects')
   },
   async getProject(id) {
-    const res = await api.get(`/api/admin/projects/${id}`)
-    return res.data
+    return await api.get(`/api/admin/projects/${id}`)
   },
   async createProject(data) {
-    const res = await api.post('/api/admin/projects', data)
-    return res.data
+    return await api.post('/api/admin/projects', data)
   },
   async updateProject(id, data) {
-    const res = await api.put(`/api/admin/projects/${id}`, data)
-    return res.data
+    return await api.put(`/api/admin/projects/${id}`, data)
   },
   async deleteProject(id) {
-    await api.delete(`/api/admin/projects/${id}`)
+    return await api.delete(`/api/admin/projects/${id}`)
   },
   async togglePublish(id) {
-    const res = await api.patch(`/api/admin/projects/${id}/publish`)
-    return res.data
+    return await api.patch(`/api/admin/projects/${id}/publish`)
   },
   async uploadFile(file) {
     const formData = new FormData()
     formData.append('file', file)
     const res = await api.post('/api/admin/upload', formData)
-    return res.data[0]
+    return res[0]
   },
   async uploadFiles(files) {
     const formData = new FormData()
     files.forEach(f => formData.append('files', f))
-    const res = await api.post('/api/admin/upload/multiple', formData)
-    return res.data
+    return await api.post('/api/admin/upload/multiple', formData)
   }
 }

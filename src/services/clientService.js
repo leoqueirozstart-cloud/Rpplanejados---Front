@@ -2,19 +2,15 @@ import api from './api'
 
 export const clientService = {
   async createClient(data) {
-    const res = await api.post('/api/clients', data)
-    return res.data
+    return await api.post('/api/clients', data)
   },
   async getClients() {
-    const res = await api.get('/api/admin/clients')
-    return res.data
+    return await api.get('/api/admin/clients')
   },
   async updateClientStatus(id, status) {
-    const res = await api.patch(`/api/admin/clients/${id}`, { status })
-    return res.data
+    return await api.patch(`/api/admin/clients/${id}`, { status })
   },
   async deleteClient(id) {
-    const res = await api.delete(`/api/admin/clients/${id}`)
-    return res.data
+    return await api.delete(`/api/admin/clients/${id}`)
   }
 }
