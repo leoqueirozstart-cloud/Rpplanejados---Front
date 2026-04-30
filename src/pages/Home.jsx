@@ -104,7 +104,7 @@ export default function Home() {
 
   const loadTestimonials = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'https://ricardo-rpplanejados.vercel.app'
+      const API_URL = (import.meta.env.VITE_API_URL || 'https://ricardo-rpplanejados.vercel.app').replace(/\/+$/, '')
       const res = await fetch(`${API_URL}/api/testimonials`)
       if (res.ok) {
         const data = await res.json()
