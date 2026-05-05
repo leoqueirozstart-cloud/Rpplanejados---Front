@@ -307,14 +307,14 @@ export default function Home() {
           </div>
           <div className="about-right">
             <div className="about-photos">
-              <img 
-                src="https://i.pinimg.com/1200x/8c/54/7c/8c547cd51c5395c0e8c3a2c9e4c3a2b.jpg" 
-                alt="Móveis planejados" 
+              <img
+                src="https://i.ibb.co/WWDYrJV5/download-6.png"
+                alt="Móveis planejados"
                 className="about-photo photo-1"
               />
-              <img 
-                src="https://i.pinimg.com/1200x/9d/65/1a/9d651ac8a4b2c8c8e4d3b2a1c9b0a1b.jpg" 
-                alt="Projetos personalizados" 
+              <img
+                src="https://i.ibb.co/PGz6fmss/download-8.png"
+                alt="Projetos personalizados"
                 className="about-photo photo-2"
               />
             </div>
