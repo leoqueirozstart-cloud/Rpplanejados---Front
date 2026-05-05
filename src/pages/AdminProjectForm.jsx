@@ -1,44 +1,124 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { projectService } from '../services/projectService'
+
+function isValidImageUrl(url) {
+  if (!url) return false
+  if (!url.startsWith('http://') && !url.startsWith('https://')) return false
+  return true
+}
+
+function ImagePreview({ src, onRemove, isCover }) {
+  const [imgError, setImgError] = useState(false)
+  
+  return (
+    <div style={{ position: 'relative', width: isCover ? 200 : 100, height: isCover ? 150 : 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #E5E7EB' }}>
+      {imgError ? (
+        <div style={{ width: '100%', height: '100%', backgroundColor: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 20 }}>⚠️</span>
+          <span style={{ fontSize: 10, color: '#666' }}>Imagem inválida</span>
+        </div>
+      ) : (
+        <img 
+          src={src} 
+          alt="" 
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          onError={() => setImgError(true)}
+        />
+      )}
+      <button 
+        type="button" 
+        onClick={onRemove}
+        style={{ 
+          position: 'absolute', top: 4, right: 4, 
+          width: 24, height: 24, borderRadius: '50%', 
+          backgroundColor: '#EF4444', color: 'white', 
+          border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 14
+        }}
+      >
+        ×
+      </button>
+    </div>
+  )
+}
 
 export default function AdminProjectForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const isEditing = !!id
-  const fileRef = useRef()
-  const imagesRef = useRef()
 
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [data, setData] = useState({
     title: '', description: '', category: 'moveis-planejados', coverImageUrl: '',
     imageUrls: [], published: false, imageUrl: ''
   })
 
-  const handleChange = (e) => setData({ ...data, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
+  useEffect(() => {
+    if (isEditing) {
+      loadProject()
+    }
+  }, [id])
 
-  const handleCover = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
+  const loadProject = async () => {
     try {
-      setUploading(true)
-      const url = await projectService.uploadFile(file)
-      setData({ ...data, coverImageUrl: url })
-    } catch { }
-    finally { setUploading(false) }
+      setLoading(true)
+      const project = await projectService.getProject(id)
+      setData({
+        title: project.title || '',
+        description: project.description || '',
+        category: project.category || 'moveis-planejados',
+        coverImageUrl: project.coverImageUrl || '',
+        imageUrls: project.imageUrls || [],
+        published: project.published || false,
+        imageUrl: ''
+      })
+    } catch (err) {
+      console.error('Erro ao carregar projeto:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleImages = async (e) => {
-    const files = Array.from(e.target.files)
-    if (!files.length) return
-    try {
-      setUploading(true)
-      const urls = await projectService.uploadFiles(files)
-      setData({ ...data, imageUrls: [...data.imageUrls, ...urls] })
-    } catch { }
-    finally { setUploading(false) }
+  const handleChange = (e) => setData({ ...data, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
+
+  const addCoverImage = () => {
+    const url = data.imageUrl.trim()
+    if (!url) return alert('Cole uma URL de imagem primeiro')
+    if (!isValidImageUrl(url)) return alert('URL deve começar com http:// ou https://')
+    setData({ ...data, coverImageUrl: url, imageUrl: '' })
+  }
+
+  const addMultipleImages = () => {
+    const input = data.imageUrl.trim()
+    if (!input) return alert('Cole as URLs de imagem primeiro')
+    
+    const urls = input.split(/[,\n]/).map(u => u.trim()).filter(u => u)
+    const validUrls = []
+    const invalidUrls = []
+    
+    urls.forEach(url => {
+      if (isValidImageUrl(url)) {
+        validUrls.push(url)
+      } else {
+        invalidUrls.push(url)
+      }
+    })
+    
+    if (validUrls.length === 0 && invalidUrls.length > 0) {
+      return alert('Nenhuma URL válida encontrada. As URLs devem começar com http:// ou https://')
+    }
+    
+    const newUrls = [...data.imageUrls, ...validUrls]
+    setData({ ...data, imageUrls: newUrls, imageUrl: '' })
+    
+    if (invalidUrls.length > 0) {
+      alert(`${validUrls.length} imagem(ns) adicionada(s). ${invalidUrls.length} URL(s) inválida(s) ignorada(s).`)
+    } else if (validUrls.length > 0) {
+      alert(`${validUrls.length} imagem(ns) adicionada(s) à galeria!`)
+    }
   }
 
   const [error, setError] = useState('')
@@ -49,8 +129,16 @@ export default function AdminProjectForm() {
     if (!data.title) return alert('Título é obrigatório')
     try {
       setSaving(true)
-      if (isEditing) await projectService.updateProject(id, data)
-      else await projectService.createProject(data)
+      const payload = {
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        coverImageUrl: data.coverImageUrl,
+        published: data.published,
+        imageUrls: data.imageUrls
+      }
+      if (isEditing) await projectService.updateProject(id, payload)
+      else await projectService.createProject(payload)
       navigate('/admin/dashboard')
     } catch (err) {
       console.error('Erro ao salvar projeto:', err)
@@ -100,73 +188,73 @@ export default function AdminProjectForm() {
           </div>
 
           <div style={{ backgroundColor: 'white', padding: 24, borderRadius: 16, marginBottom: 24 }}>
-            <h3 style={{ margin: '0 0 16px' }}>URL da Imagem</h3>
+            <h3 style={{ margin: '0 0 16px' }}>Imagem de Capa</h3>
             <p style={{ fontSize: 13, color: '#666', marginBottom: 12 }}>
-              Cole o link de uma imagem diretamente (do Instagram, Google Photos, etc)
+              Cole o link de uma imagem externa (Cloudinary, ImageKit, Google Photos, Instagram, etc)
             </p>
             <div style={{ display: 'flex', gap: 12 }}>
               <input 
                 name="imageUrl" 
                 value={data.imageUrl}
                 onChange={(e) => setData({ ...data, imageUrl: e.target.value })}
-                placeholder="https://... .jpg ou .png"
+                placeholder="https://... (http:// ou https://)"
                 style={{ flex: 1, padding: '12px 16px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }}
               />
               <button 
                 type="button" 
-                onClick={() => {
-                  const url = data.imageUrl
-                  if (!url) return alert('Cole uma URL primeiro')
-                  if (!url.match(/^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i)) {
-                    return alert('URL deve terminar em .jpg, .jpeg, .png, .webp ou .gif')
-                  }
-                  if (!data.coverImageUrl) {
-                    setData({ ...data, coverImageUrl: url, imageUrls: [url], imageUrl: '' })
-                    alert('Imagem adicionada como capa!')
-                  } else {
-                    setData({ ...data, imageUrls: [...data.imageUrls, url], imageUrl: '' })
-                    alert('Imagem adicionada a galeria!')
-                  }
-                }}
+                onClick={addCoverImage}
                 style={{ padding: '12px 24px', backgroundColor: '#E1306C', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
               >
-                Adicionar
+                Definir como Capa
               </button>
             </div>
+            {data.coverImageUrl && (
+              <div style={{ marginTop: 16, position: 'relative', display: 'inline-block' }}>
+                <img src={data.coverImageUrl} alt="Capa" style={{ maxHeight: 200, borderRadius: 8 }} onError={(e) => e.target.style.display = 'none'} />
+                <button type="button" onClick={() => setData({ ...data, coverImageUrl: '' })} style={{ position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: '50%', backgroundColor: '#EF4444', color: 'white', border: 'none', cursor: 'pointer' }}>x</button>
+              </div>
+            )}
             <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>
               Dica: No Instagram, abra a imagem no navegador, clique com botão direito e selecione "Copiar endereço da imagem"
             </p>
           </div>
 
           <div style={{ backgroundColor: 'white', padding: 24, borderRadius: 16, marginBottom: 24 }}>
-            <h3 style={{ margin: '0 0 16px' }}>Imagem de Capa</h3>
-            <input type="file" ref={fileRef} onChange={handleCover} accept="image/*" style={{ display: 'none' }} />
-            {data.coverImageUrl ? (
-              <div style={{ position: 'relative', display: 'inline-block' }}>
-                <img src={data.coverImageUrl} alt="" style={{ maxHeight: 200, borderRadius: 8 }} />
-                <button type="button" onClick={() => setData({ ...data, coverImageUrl: '' })} style={{ position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: '50%', backgroundColor: '#EF4444', color: 'white', border: 'none', cursor: 'pointer' }}>x</button>
-              </div>
-            ) : (
-              <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} style={{ padding: '12px 24px', backgroundColor: '#F3F4F6', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
-                {uploading ? 'Enviando...' : 'Selecionar Imagem'}
-              </button>
-            )}
-          </div>
-
-          <div style={{ backgroundColor: 'white', padding: 24, borderRadius: 16, marginBottom: 24 }}>
             <h3 style={{ margin: '0 0 16px' }}>Galeria de Imagens</h3>
-            <input type="file" ref={imagesRef} multiple onChange={handleImages} accept="image/*" style={{ display: 'none' }} />
-            <button type="button" onClick={() => imagesRef.current?.click()} disabled={uploading} style={{ padding: '12px 24px', backgroundColor: '#F3F4F6', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
-              {uploading ? 'Enviando...' : 'Adicionar Imagens'}
+            <p style={{ fontSize: 13, color: '#666', marginBottom: 12 }}>
+              Cole várias URLs separadas por vírgula ou nova linha para adicionar múltiplas imagens de uma vez
+            </p>
+            <textarea
+              name="imageUrl" 
+              value={data.imageUrl}
+              onChange={(e) => setData({ ...data, imageUrl: e.target.value })}
+              placeholder="https://exemplo1.jpg&#10;https://exemplo2.png&#10;https://exemplo3.webp"
+              rows={4}
+              style={{ width: '100%', padding: '12px 16px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14, boxSizing: 'border-box', resize: 'vertical', fontFamily: 'monospace' }}
+            />
+            <button 
+              type="button" 
+              onClick={addMultipleImages}
+              style={{ marginTop: 12, padding: '12px 24px', backgroundColor: '#F3F4F6', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}
+            >
+              Adicionar Todas as URLs
             </button>
+            
             {data.imageUrls.length > 0 && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
-                {data.imageUrls.map((url, i) => (
-                  <div key={i} style={{ position: 'relative', width: 80, height: 80 }}>
-                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
-                    <button type="button" onClick={() => setData({ ...data, imageUrls: data.imageUrls.filter((_, idx) => idx !== i) })} style={{ position: 'absolute', top: -8, right: -8, width: 20, height: 20, borderRadius: '50%', backgroundColor: '#EF4444', color: 'white', border: 'none', cursor: 'pointer', fontSize: 12 }}>x</button>
-                  </div>
-                ))}
+              <div style={{ marginTop: 20 }}>
+                <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>
+                  {data.imageUrls.length} imagem(ns) na galeria:
+                </p>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  {data.imageUrls.map((url, i) => (
+                    <ImagePreview 
+                      key={i} 
+                      src={url} 
+                      onRemove={() => setData({ ...data, imageUrls: data.imageUrls.filter((_, idx) => idx !== i) })}
+                      isCover={false}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>

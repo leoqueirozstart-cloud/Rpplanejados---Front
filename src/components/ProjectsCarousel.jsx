@@ -1,5 +1,20 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+
+const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='200' y='150' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3EImagem não disponível%3C/text%3E%3C/svg%3E"
+
+function ImageWithFallback({ src, alt, className }) {
+  const [imgError, setImgError] = useState(false)
+  return (
+    <img 
+      src={imgError || !src ? FALLBACK_IMG : src} 
+      alt={alt}
+      className={className}
+      loading="lazy"
+      onError={() => setImgError(true)}
+    />
+  )
+}
 
 function ProjectsCarousel({ projects }) {
   const scrollRef = useRef(null)
@@ -43,8 +58,8 @@ function ProjectsCarousel({ projects }) {
         {projects.map((project) => (
           <Link key={project.id} to={`/projeto/${project.id}`} className="drop-card">
             <div className="drop-image-container">
-              <img 
-                src={project.coverImageUrl || '/placeholder.jpg'} 
+              <ImageWithFallback 
+                src={project.coverImageUrl} 
                 alt={project.title}
                 className={`drop-image ${project.soldOut ? 'sold-out' : ''}`} 
               />

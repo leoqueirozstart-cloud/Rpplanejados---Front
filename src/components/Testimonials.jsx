@@ -2,6 +2,21 @@
 
 import * as React from "react"
 
+const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='200' y='150' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3EImagem não disponível%3C/text%3E%3C/svg%3E"
+
+function ImageWithFallback({ src, alt, className }) {
+  const [imgError, setImgError] = React.useState(false)
+  return (
+    <img 
+      src={imgError || !src ? FALLBACK_IMG : src} 
+      alt={alt}
+      className={className}
+      loading="lazy"
+      onError={() => setImgError(true)}
+    />
+  )
+}
+
 export default function Testimonials({ testimonials }) {
   const [current, setCurrent] = React.useState(0)
 
@@ -25,7 +40,7 @@ export default function Testimonials({ testimonials }) {
             {testimonials.map((t) => (
               <div key={t.id} className="depoimento-slide">
                 <div className="depoimento-card">
-                  <img src={t.image_url || t.imageUrl || t.avatarUrl} alt={`Depoimento de ${t.name}`} className="depoimento-image" />
+                  <ImageWithFallback src={t.image_url || t.imageUrl || t.avatarUrl} alt={`Depoimento de ${t.name}`} className="depoimento-image" />
                 </div>
               </div>
             ))}

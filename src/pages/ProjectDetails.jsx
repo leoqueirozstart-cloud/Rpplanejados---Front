@@ -3,22 +3,55 @@ import { useParams, Link } from 'react-router-dom'
 import { projectService } from '../services/projectService'
 import LeadForm from '../components/LeadForm'
 
+const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='200' y='150' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3EImagem não disponível%3C/text%3E%3C/svg%3E"
+
+function ImageWithFallback({ src, alt, className }) {
+  const [imgError, setImgError] = useState(false)
+  return (
+    <img 
+      src={imgError || !src ? FALLBACK_IMG : src} 
+      alt={alt}
+      className={className}
+      loading="lazy"
+      onError={() => setImgError(true)}
+    />
+  )
+}
+
 export default function ProjectDetails() {
   const { id } = useParams()
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [selected, setSelected] = useState(0)
   const [showLeadForm, setShowLeadForm] = useState(false)
 
-  useEffect(() => { loadProject() }, [id])
+  useEffect(() => { 
+    loadProject() 
+  }, [id])
+
+  useEffect(() => {
+    if (project?.title) {
+      document.title = `${project.title} | RP Planejados`
+    }
+  }, [project])
 
   const loadProject = async () => {
     try {
       setLoading(true)
+      setError(null)
       const data = await projectService.getPublishedProject(id)
-      setProject(data)
-    } catch { }
-    finally { setLoading(false) }
+      if (!data) {
+        setError('Projeto não encontrado')
+      } else {
+        setProject(data)
+      }
+    } catch (err) {
+      console.error('Erro ao carregar projeto:', err)
+      setError('Projeto não encontrado ou indisponível')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getCategoryLabel = (category) => {
@@ -33,24 +66,42 @@ export default function ProjectDetails() {
     return labels[category] || category
   }
 
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(`Olá! Vi o projeto "${project?.title}" no site da RP Planejados e gostaria de um orçamento parecido.`)
+    window.open(`https://wa.me/5511998231085?text=${message}`, '_blank')
+  }
+
   if (loading) return (
     <div className="page">
       <div className="noise-overlay" />
-      <div className="loader"><div className="spinner" /></div>
-    </div>
-  )
-
-  if (!project) return (
-    <div className="page">
-      <div className="noise-overlay" />
-      <div className="grid-lines">{[...Array(12)].map((_, i) => <div key={i} className="grid-line" />)}</div>
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
-        <div><h1 style={{ fontSize: 48, fontWeight: 900 }}>Projeto não encontrado</h1><Link to="/" style={{ color: 'var(--primary)' }}>← Voltar</Link></div>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto 16px' }}></div>
+          <p style={{ color: '#666' }}>Carregando projeto...</p>
+        </div>
       </div>
     </div>
   )
 
-  const images = project.imageUrls?.length > 0 ? project.imageUrls : [project.coverImageUrl]
+  if (error || !project) return (
+    <div className="page">
+      <div className="noise-overlay" />
+      <div className="grid-lines">{[...Array(12)].map((_, i) => <div key={i} className="grid-line" />)}</div>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, padding: 20 }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 16 }}>Projeto não encontrado</h1>
+          <p style={{ color: '#666', marginBottom: 24 }}>{error || 'Projeto não encontrado ou indisponível.'}</p>
+          <Link to="/" style={{ color: 'var(--primary)', fontWeight: 600 }}>← Voltar ao portfólio</Link>
+        </div>
+      </div>
+    </div>
+  )
+
+  const galleryImages = project.imageUrls?.length > 0 
+    ? [...new Set(project.imageUrls)]
+    : project.coverImageUrl 
+      ? [project.coverImageUrl] 
+      : []
 
   return (
     <div className="page">
@@ -73,30 +124,44 @@ export default function ProjectDetails() {
       </header>
 
       <section className="project-detail">
-        <div className="project-detail-grid">
-          <div className="project-detail-images">
-            <div className="project-detail-main">
-              <img src={images[selected]} alt={project.title} />
-            </div>
-            {images.length > 1 && (
-              <div className="project-detail-thumbs">
-                {images.map((url, i) => (
-                  <button key={i} onClick={() => setSelected(i)} className={`project-detail-thumb ${selected === i ? 'active' : ''}`}>
-                    <img src={url} alt="" />
-                  </button>
-                ))}
+        <div className="project-detail-container">
+          <div className="project-detail-grid">
+            <div className="project-detail-images">
+              <div className="project-detail-main">
+                {galleryImages.length > 0 ? (
+                  <ImageWithFallback src={galleryImages[selected]} alt={project.title} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f3f4f6' }}>
+                    <span style={{ color: '#9ca3af' }}>Sem imagem disponível</span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="project-detail-info">
-            <Link to="/#portfolio" className="back-link">← VOLTAR AO PORTFÓLIO</Link>
-            <span className="project-detail-category">{getCategoryLabel(project.category)}</span>
-            <h1 className="project-detail-title">{project.title}</h1>
-            <p className="project-detail-desc">{project.description}</p>
-            <button onClick={() => setShowLeadForm(true)} className="start-button">
-              SOLICITAR ORÇAMENTO
-              <span className="arrow">→</span>
-            </button>
+              {galleryImages.length > 1 && (
+                <div className="project-detail-thumbs">
+                  {galleryImages.map((url, i) => (
+                    <button 
+                      key={i} 
+                      onClick={() => setSelected(i)} 
+                      className={`project-detail-thumb ${selected === i ? 'active' : ''}`}
+                    >
+                      <ImageWithFallback src={url} alt={`Imagem ${i + 1}`} />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="project-detail-info">
+              <Link to="/#portfolio" className="back-link">← VOLTAR AO PORTFÓLIO</Link>
+              <span className="project-detail-category">{getCategoryLabel(project.category)}</span>
+              <h1 className="project-detail-title">{project.title}</h1>
+              {project.description && (
+                <p className="project-detail-desc">{project.description}</p>
+              )}
+              <button onClick={handleWhatsApp} className="start-button" style={{ marginTop: 16 }}>
+                Quero um projeto parecido
+                <span className="arrow">→</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>

@@ -61,11 +61,16 @@ export default function AdminTestimonials() {
 
   const handleAdd = async (e) => {
     e.preventDefault()
-    if (!newUrl.trim()) return
+    if (!newUrl.trim()) return alert('URL é obrigatória')
+    
+    const url = newUrl.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return alert('URL deve começar com http:// ou https://')
+    }
 
     setSaving(true)
     try {
-      await testimonialService.addTestimonial({ imageUrl: newUrl, name: newName })
+      await testimonialService.addTestimonial({ imageUrl: url, name: newName })
       setNewUrl('')
       setNewName('')
       loadTestimonials()

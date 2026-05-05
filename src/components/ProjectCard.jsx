@@ -1,4 +1,7 @@
-import { Link } from 'react-router-dom';
+import React from 'react'
+import { Link } from 'react-router-dom'
+
+const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='200' y='150' text-anchor='middle' fill='%239ca3af' font-family='sans-serif' font-size='14'%3EImagem não disponível%3C/text%3E%3C/svg%3E"
 
 function ProjectCard({ project }) {
   const getCategoryLabel = (category) => {
@@ -13,10 +16,17 @@ function ProjectCard({ project }) {
     return labels[category] || category;
   };
 
+  const [imgError, setImgError] = React.useState(false)
+
   return (
     <Link to={`/projeto/${project.id}`} className="project-card group">
       <div className="project-card-image relative">
-        <img src={project.coverImageUrl || '/placeholder.jpg'} alt={project.title} />
+        <img 
+          src={imgError || !project.coverImageUrl ? FALLBACK_IMG : project.coverImageUrl} 
+          alt={project.title}
+          loading="lazy"
+          onError={() => setImgError(true)}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <span className="absolute top-4 right-4 badge badge-primary">
           {getCategoryLabel(project.category)}

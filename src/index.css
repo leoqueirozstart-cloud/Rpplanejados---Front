@@ -1053,18 +1053,28 @@ input, textarea, select {
 /* Project Detail */
 .project-detail {
   min-height: 100vh;
-  padding: 120px 40px 80px;
+  padding: 100px 20px 60px;
   position: relative;
   z-index: 1;
 }
 
-.project-detail-grid {
-  max-width: 1600px;
+.project-detail-container {
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+.project-detail-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: center;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 900px) {
+  .project-detail-grid {
+    grid-template-columns: 1.2fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
 }
 
 .project-detail-images {
@@ -1074,39 +1084,60 @@ input, textarea, select {
 }
 
 .project-detail-main {
-  aspect-ratio: 4/3;
-  border: 2px solid var(--foreground);
+  width: 100%;
+  height: clamp(280px, 55vh, 560px);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 12px 12px 0 var(--foreground);
+  background-color: #f3f4f6;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .project-detail-main img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .project-detail-thumbs {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
-.project-detail-thumbs::-webkit-scrollbar {
-  display: none;
+@media (min-width: 600px) {
+  .project-detail-thumbs {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .project-detail-thumbs {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .project-detail-thumb {
-  width: 80px;
-  height: 80px;
+  width: 100%;
+  height: 100px;
   flex-shrink: 0;
   border: 2px solid transparent;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: border-color 0.3s, opacity 0.3s;
+  transition: border-color 0.3s, transform 0.2s;
   padding: 0;
   background: none;
+}
+
+@media (min-width: 600px) {
+  .project-detail-thumb {
+    height: 120px;
+  }
+}
+
+.project-detail-thumb:hover {
+  transform: scale(1.02);
 }
 
 .project-detail-thumb.active {
@@ -1122,7 +1153,8 @@ input, textarea, select {
 .project-detail-info {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  padding: 24px 0;
 }
 
 .back-link {
