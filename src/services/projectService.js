@@ -32,6 +32,10 @@ export const projectService = {
     const res = await api.patch(`/api/admin/projects/${id}/publish`)
     return res.data
   },
+  async reorderProjects(order) {
+    const res = await api.patch('/api/admin/projects/reorder', { order })
+    return res.data
+  },
   async uploadFile(file) {
     const formData = new FormData()
     formData.append('file', file)
